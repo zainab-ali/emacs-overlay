@@ -86,7 +86,7 @@ let
             tree-sitter-grammars = super.runCommand "tree-sitter-grammars" {}
               (super.lib.concatStringsSep "\n" (["mkdir -p $out/lib"] ++ (map linkCmd (map newDrv plugins))));
           in {
-            buildInputs = old.buildInputs ++ [ self.pkgs.tree-sitter tree-sitter-grammars];
+            buildInputs = old.buildInputs ++ [ self.pkgs.tree-sitter tree-sitter-grammars] ++ (map newDrv plugins);
             # before building the `.el` files, we need to allow the `tree-sitter` libraries
             # bundled in emacs to be dynamically loaded.
             TREE_SITTER_LIBS = super.lib.concatStringsSep " " ([ "-ltree-sitter" ] ++ (map linkerFlag plugins)); 
