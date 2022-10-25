@@ -77,7 +77,7 @@ let
             lib = drv: ''lib${libName drv}.${ext}'';
             linkCmd = drv: if !self.stdenv.isDarwin then "ln -s ${drv}/parser $out/lib/${lib drv}"
                            else ''
-ln -s ${drv}/parser $out/lib/${lib drv}
+cp ${drv}/parser $out/lib/${lib drv}
 install_name_tool -id $out/lib/${lib drv} $out/lib/${lib drv};
 '';
             linkerFlag = drv: "-l" + libName drv;
