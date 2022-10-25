@@ -73,7 +73,8 @@ let
         drv: drv.overrideAttrs (old:
           let
             libName = drv: super.lib.removeSuffix "-grammar" drv.pname;
-            lib = drv: ''lib${libName drv}.so'';
+            ext = if self.stdenv.isDarwin then "dylib" else "so";
+            lib = drv: ''lib${libName drv}.${ext}'';
             linkCmd = drv: "ln -s ${drv}/parser $out/lib/${lib drv}";
             linkerFlag = drv: "-l" + libName drv;
             plugins = args.withTreeSitterPlugins self.pkgs.tree-sitter-grammars;
