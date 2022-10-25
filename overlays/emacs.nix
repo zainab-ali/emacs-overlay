@@ -83,7 +83,7 @@ install_name_tool -id $out/lib/${lib drv} $out/lib/${lib drv};
             linkerFlag = drv: "-l" + libName drv;
 
             plugins = args.withTreeSitterPlugins self.pkgs.tree-sitter-grammars;
-            tree-sitter-grammars = super.runCommand "tree-sitter-grammars" {}
+            tree-sitter-grammars = super.runCommandCC "tree-sitter-grammars" {}
               (super.lib.concatStringsSep "\n" (["mkdir -p $out/lib"] ++ (map linkCmd plugins)));
           in {
             buildInputs = old.buildInputs ++ [ self.pkgs.tree-sitter tree-sitter-grammars ];
