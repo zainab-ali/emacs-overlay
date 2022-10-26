@@ -73,25 +73,25 @@ let
         drv: drv.overrideAttrs (old:
           let
             libName = drv: super.lib.removeSuffix "-grammar" drv.pname;
-            ext = if self.stdenv.isDarwin then "dylib" else "so";
-            lib = drv: ''lib${libName drv}.${ext}'';
+            lib = drv: ''lib${libName drv}.so'';
             linkCmd = drv: "ln -s ${drv}/parser $out/lib/${lib drv}";
             linkerFlag = drv: "-l" + libName drv;
 
-            newDrv = drv: drv.overrideAttrs (old: {
-              # makeFlags = "LDFLAGS=-Wl,-install_name,$(out)/lib/${lib old}";
+            darwinLib = drv: ''lib${libName drv}.dylib'';
+            darwinDrv = drv: drv.overrideAttrs (old: {
               fixupPhase = ''
-               install_name_tool -id $out/lib/${lib old} $out/parser
+               install_name_tool -id $out/lib/${darwinLib old} $out/parser
                mkdir -p $out/lib
-               ln -s $out/parser $out/lib/${lib old}
+               ln -s $out/parser $out/lib/${darwinLib old}
 '';
             });
-
             plugins = args.withTreeSitterPlugins self.pkgs.tree-sitter-grammars;
             tree-sitter-grammars = super.runCommand "tree-sitter-grammars" {}
-              (super.lib.concatStringsSep "\n" (["mkdir -p $out/lib"] ++ (map linkCmd (map newDrv plugins))));
+              (super.lib.concatStringsSep "\n" (["mkdir -p $out/lib"] ++ (map linkCmd plugins)));
+            darwinGrammars = map darwinDrv plugins;
+            grammars = if self.stdenv.isDarwin then darwinGrammars else [tree-sitter-grammars];
           in {
-            buildInputs = old.buildInputs ++ [ self.pkgs.tree-sitter ] ++ (map newDrv plugins);
+            buildInputs = old.buildInputs ++ [ self.pkgs.tree-sitter ] ++ grammars;
             # before building the `.el` files, we need to allow the `tree-sitter` libraries
             # bundled in emacs to be dynamically loaded.
             TREE_SITTER_LIBS = super.lib.concatStringsSep " " ([ "-ltree-sitter" ] ++ (map linkerFlag plugins)); 
