@@ -77,7 +77,7 @@ let
             linkCmd = drv: "ln -s ${drv}/parser $out/lib/${lib drv}";
             linkerFlag = drv: "-l" + libName drv;
 
-            darwinLib = drv: ''lib${libName drv}.dylib'';
+            darwinLib = drv: ''lib${libName drv}.so'';
             darwinDrv = drv: drv.overrideAttrs (old: {
               fixupPhase = ''
                install_name_tool -id $out/lib/${darwinLib old} $out/parser
