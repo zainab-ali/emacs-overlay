@@ -85,6 +85,7 @@ let
                ln -s $out/parser $out/lib/${darwinLib old}
 '';
             });
+            darwinLibPath = drv: ''${drv}/lib'';
             plugins = args.withTreeSitterPlugins self.pkgs.tree-sitter-grammars;
             tree-sitter-grammars = super.runCommand "tree-sitter-grammars" {}
               (super.lib.concatStringsSep "\n" (["mkdir -p $out/lib"] ++ (map linkCmd plugins)));
@@ -94,7 +95,8 @@ let
             buildInputs = old.buildInputs ++ [ self.pkgs.tree-sitter ] ++ grammars;
             # before building the `.el` files, we need to allow the `tree-sitter` libraries
             # bundled in emacs to be dynamically loaded.
-            TREE_SITTER_LIBS = super.lib.concatStringsSep " " ([ "-ltree-sitter" ] ++ (map linkerFlag plugins)); 
+            TREE_SITTER_LIBS = super.lib.concatStringsSep " " ([ "-ltree-sitter" ] ++ (map linkerFlag plugins));
+            DYLD_LIBRARY_PATH = super.lib.concatStringsSep ":" (map darwinLibPath plugins);
           }
         )
       )));
